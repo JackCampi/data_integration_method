@@ -1,3 +1,146 @@
-\documentclass{article}
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Language & encoding ----------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,spanish]{babel}
+
+% ---------- Geometry ----------
+\usepackage[a4paper,margin=2.3cm]{geometry}
+
+% ---------- Fonts ----------
+\usepackage{newtxtext,newtxmath} % Times-like academic font
+\usepackage{microtype}
+
+% ---------- Math ----------
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+
+% ---------- Figures / tables ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ---------- Links / bibliography ----------
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+
+% ---------- Section formatting ----------
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.0ex}{0.8ex}
+\titlespacing*{\subsection}{0pt}{0.8ex}{0.6ex}
+
+% ---------- Header ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small Data integration for kidney transplantation}
+\rhead{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- Abstract box ----------
+\usepackage{framed}
+\setlength{\FrameSep}{8pt}
+
+% ---------- No indentation ----------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+% ==================================
+%  Title
+% ==================================
+\title{\Large \textbf{Data Integration Methods and Application to Kidney Transplantation}\\
+\vspace{0.3em}\normalsize Final Project -- Mathématiques Appliquées}
+
+\author{
+Prénom NOM\thanks{École Centrale de Nantes, MATHAPPLI} \\
+\small \texttt{prenom.nom@ec-nantes.fr}
+}
+
+\date{\today}
+
 \begin{document}
+
+% ---------- Two-column title block ----------
+\twocolumn[
+\maketitle
+\vspace{-1.2em}
+
+\begin{center}
+\small
+\textbf{Keywords:} data integration, multi-view learning, transplantation, prediction
+\end{center}
+
+\vspace{0.8em}
+
+\begin{framed}
+\noindent\textbf{Abstract.}
+Dans ce rapport, nous étudions les méthodes d’intégration de données hétérogènes
+(cliniques, génétiques, biologiques) dans un cadre d’apprentissage supervisé.
+L’objectif est de construire un prédicteur du rejet humoral après transplantation
+rénale. Après une synthèse de la littérature, nous appliquons une méthode
+d’intégration spécifique et évaluons ses performances sur des données réelles.
+\end{framed}
+
+\vspace{1.2em}
+]
+
+% ==================================
+%  Content
+% ==================================
+\section{Introduction}
+La transplantation rénale est un traitement de référence de l’insuffisance rénale
+terminale. Cependant, le rejet humoral demeure une cause majeure d’échec du greffon.
+L’intégration de données multi-sources constitue un levier prometteur pour améliorer
+les modèles prédictifs \citep{ghojogh2021rkhs}.
+
+\section{Contexte et données}
+\subsection{Sources de données}
+Description des données cliniques, biologiques et génétiques utilisées, ainsi que
+les étapes de pré-traitement.
+
+\subsection{Problème de prédiction}
+Définition de la variable cible, horizon temporel, métriques d’évaluation.
+
+\section{Méthodes d’intégration de données}
+\subsection{Synthèse bibliographique}
+Early integration, late integration, intermediate integration, multi-view learning,
+kernel methods, CCA, PLS, etc.
+
+\subsection{Méthode retenue}
+Description détaillée de la méthode choisie et justification.
+
+\section{Résultats}
+\subsection{Protocole expérimental}
+Validation croisée, modèles de référence, réglage des hyperparamètres.
+
+\subsection{Résultats quantitatifs}
+
+\begin{table}[h]
+\centering
+\caption{Performances des modèles}
+\begin{tabular}{lcc}
+\toprule
+Modèle & AUC & Accuracy \\
+\midrule
+Clinique seul & 0.71 & 0.68 \\
+Intégration multi-vues & 0.79 & 0.74 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+Analyse critique des résultats, limites de l’étude, interprétabilité.
+
+\section{Conclusion et perspectives}
+Résumé des contributions et pistes futures.
+
+% ==================================
+%  Bibliography
+% ==================================
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
 \end{document}
