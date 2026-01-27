@@ -1,0 +1,49 @@
+# =========================
+# LaTeX auxiliary files
+# =========================
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.xdv
+
+# =========================
+# LaTeX intermediate/output
+# =========================
+*.dvi
+*.ps
+
+# =========================
+# Build directories
+# =========================
+out/
+build/
+
+# =========================
+# PDF output (usually ignore)
+# Comment this if you WANT to version PDFs
+# =========================
+*.pdf
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
