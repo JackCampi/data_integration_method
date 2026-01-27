@@ -9,7 +9,7 @@
 \usepackage[english,spanish]{babel}
 
 % ---------- Geometry ----------
-\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage[a4paper,margin=1.5cm]{geometry}
 
 % ---------- Fonts ----------
 \usepackage{newtxtext,newtxmath} % Times-like academic font
@@ -50,6 +50,7 @@
 % ---------- No indentation ----------
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4pt}
+\setlength{\columnsep}{0.8cm}
 
 % ==================================
 %  Title
@@ -66,17 +67,21 @@ Prénom NOM\thanks{École Centrale de Nantes, MATHAPPLI} \\
 
 \begin{document}
 
+
 % ---------- Two-column title block ----------
 \twocolumn[
 \maketitle
-\vspace{-1.2em}
+\vspace{-1.0em}
 
-\begin{center}
+\noindent\rule{\linewidth}{1.2pt}
+
+\vspace{0.2em}
+%\begin{center}
 \small
 \textbf{Keywords:} data integration, multi-view learning, transplantation, prediction
-\end{center}
+%\end{center}
 
-\vspace{0.8em}
+%\vspace{0.2em}
 
 \begin{framed}
 \noindent\textbf{Abstract.}
