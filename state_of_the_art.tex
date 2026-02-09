@@ -59,8 +59,10 @@
 \vspace{0.3em}\normalsize Final Project -- Mathématiques Appliquées}
 
 \author{
-Prénom NOM\thanks{École Centrale de Nantes, MATHAPPLI} \\
-\small \texttt{prenom.nom@ec-nantes.fr}
+Angel ROMERO, Ana María PINZÓN
+\thanks{École Centrale de Nantes, MATHAPPLI} \\
+\small {École Centrale de Nantes}
+\small {MATHAPPLI}
 }
 
 \date{\today}
@@ -82,15 +84,14 @@ Prénom NOM\thanks{École Centrale de Nantes, MATHAPPLI} \\
 %\end{center}
 
 %\vspace{0.2em}
-
-\begin{framed}
-\noindent\textbf{Abstract.}
-Dans ce rapport, nous étudions les méthodes d’intégration de données hétérogènes
-(cliniques, génétiques, biologiques) dans un cadre d’apprentissage supervisé.
-L’objectif est de construire un prédicteur du rejet humoral après transplantation
-rénale. Après une synthèse de la littérature, nous appliquons une méthode
-d’intégration spécifique et évaluons ses performances sur des données réelles.
-\end{framed}
+% \begin{framed}
+% \noindent\textbf{Abstract.}
+% Dans ce rapport, nous étudions les méthodes d’intégration de données hétérogènes
+% (cliniques, génétiques, biologiques) dans un cadre d’apprentissage supervisé.
+% L’objectif est de construire un prédicteur du rejet humoral après transplantation
+% rénale. Après une synthèse de la littérature, nous appliquons une méthode
+% d’intégration spécifique et évaluons ses performances sur des données réelles.
+% \end{framed}
 
 \vspace{1.2em}
 ]
@@ -98,6 +99,51 @@ d’intégration spécifique et évaluons ses performances sur des données rée
 % ==================================
 %  Content
 % ==================================
+
+\section{Introduction}
+
+\section{Problematic}
+Why do we need data intégration tecniques? 
+Naive approach :  Just having every variable as a simple covariate? 
+Limitations (are they mathematical or simply it is not coherent with the problem?)
+If its mathematical, why? (sum of distribution laws, ...)
+If its coherence (Different type of data, correlation and causality,...)
+
+\section{First approach (naive?)}
+Linear combination of the variables
+
+Normalizing and suming everything
+
+Simply using them all in the same data base?
+
+Proyection in one common space
+
+\section{Modern methods and research}
+Kernel methods 
+
+Others?
+
+
+\section{Discussion}
+Rigourus enough?
+
+Precission? 
+
+Risk : How much risk would be tolerable for decision making in the 
+medical field?
+
+Interpretability? In the medical field, the models have to be precise and have an
+accurate argument for the prediction (i.e. which indicator and why is it having
+that weight on the decision taken by the model)
+Finally, in practice an important question would be, how implied should be
+the doctor in the decision? Should it be a model completely autonomous? 
+
+
+
+
+
+
+
 \section{Introduction}
 La transplantation rénale est un traitement de référence de l’insuffisance rénale
 terminale. Cependant, le rejet humoral demeure une cause majeure d’échec du greffon.
@@ -125,6 +171,7 @@ Description détaillée de la méthode choisie et justification.
 Validation croisée, modèles de référence, réglage des hyperparamètres.
 
 \subsection{Résultats quantitatifs}
+
 
 \begin{table}[h]
 \centering
