@@ -6,7 +6,7 @@
 % ---------- Language & encoding ----------
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[english,spanish]{babel}
+\usepackage[english]{babel}
 
 % ---------- Geometry ----------
 \usepackage[a4paper,margin=1.5cm]{geometry}
@@ -103,38 +103,29 @@ Angel ROMERO, Ana María PINZÓN
 \section{Introduction}
 
 
-Predictive statistical models have not been used a lot historically
-in the medical field due to the heterogeneity of the biological data.
-This means, laboratories obtain different kind of informations from the same
-individu such as xray images, molecular data, clinical data, etc.
-This poses a problem for the unification in a single model, since the
-data structures are very different in nature. To sum there is not great amounts of 
-data available because there is no standarization in many lab procedures, 
-and also because of the cost of collecting data, and even the ethical issues
-that can arise from collecting data in the medical field. entre otros. This presents
-a barrier for models which need a lot of observations to be statistically valid 
-in the sense that they assume a huge amount of individuals to make valis inferences.
+% Pb amount of data
+Predictive statistical models have not been used a lot historically in the medical field due to the heterogeneity of the biological data. This means, laboratories obtain different kind of informations from the same individu such as xray images, molecular data, clinical data, etc. This poses a problem for the unification in a single model, since the data structures are very different in nature. To sum there is not great amounts of data available because there is no standarization in many lab procedures, and also because of the cost of collecting data, and even the ethical issues that can arise from collecting data in the medical field. entre otros. This presents a barrier for models which need a lot of observations to be statistically valid in the sense that they assume a huge amount of individuals to make good inferences.
 
-In this project we will work with data such as clinical data, demographic data, 
-molecular data, etc. The problem here is how can we relate this variables if they
-do not live in the same spaces. This a problem of multi-modal data integration.
+% Pb multi-modal data
+In this project we will work with data such as clinical data, demographic data, molecular data, etc. The problem here is how can we relate this variables if they do not live in the same spaces. This a problem of multi-modal data integration.
 
-Latest technologies in biology labs allow
-for molecular data collection at levels we never 
-had before. Nowadays, we talk about multi-omics data, which observes multiple biological phenotypes by levels of deepness from de the genetics to the phenomics (observable disfunction).
+% Multi-omics data
+Latest technologies in biology labs allow for molecular data collection at levels we never had before. Nowadays, we talk about multi-omics data, which observes multiple biological phenotypes by levels of deepness from de the genetics to the phenomics (observable disfunction).
 
-Another difficulty lies in the fact that there are not a lot of individuals in the data base but we do have access to information of different types for the same individual. 
-We would like to see if we can get better predictions correctly relating this variables between them. (Discusion)
+% Possible discussion for improving pred. due to amount of info on an individu
+Another difficulty lies in the fact that there are not a lot of individuals in the data base but we do have access to information of different types for the same individual. We would like to see if we can get better predictions correctly relating this variables between them. (Discusion)
 
-Bref,
-For this project we are gonna discuss different ways of integrating multi-modal data
-(taking into account their nature) in a prediction model and test them to see if we can get relatively good predictions for our specific problem of the rejection humoralafter kidney transplantation.
+% Problem description
+For this project we are gonna discuss different ways of integrating multi-modal data (taking into account their nature) in a prediction model and test them to see if we can get relatively good predictions for our specific problem of the rejection humoralafter kidney transplantation.
 
-Why do we need data intégration tecniques? 
+% Other possible questions
+Why do we need data integration tecniques? 
 Naive approach :  Just having every variable as a simple covariate? 
 Limitations (are they mathematical or simply it is not coherent with the problem?)
 If its mathematical, why? (sum of distribution laws, ...)
 If its coherence (Different type of data, correlation and causality,...)
+
+% We still need to add a bit of the kidney transplant issue to contextualize the multi-modal problem in the medical field
 
 \section{Data integration methods}
 
@@ -154,11 +145,22 @@ Others?
 
 \subsubsection{Kernel methods}
 
+Kernel methods are algorithms which take the kernel function as an input. The kernel function can be seen as a "similarity function" that could describe how similar are two data points. The idea behind the kernel methods is to  map the data into higher-dimensional spaces where it is nicer to do machine learning. Or, in other words, the points are mapped into a space where they are more easily separable. The curious thing is that in this new space the points are now represented by their kernel function. 
 
+This approach represents several advantages for our problem since it allows us to map elements from any general space, meaning our points can be real numbers, chains of characters, images, etc. This is already good for our heterogenious type of data. But still the problem of the integration persists. The kernel methods have an approach for this. The Multiple Kernel Learning (MKL) methods compute a kernel matrix for each feature and then combines them into a final kernel matrix. This could be done by minimizing an objective function, or ...
 
+% Ponerlo mas matematico?
+% Explicar bien los MKL
+% Poner referencias
+
+The advantage for MKL methods is that the final kernel matrix can be used for downstream analysis, supporting the analyses of influencing elements in the prediction.
 
 
 \section{Discussion}
+
+% How can our model trace influencing elements to give useful retour?
+
+
 Rigourus enough?
 
 Precission? 
@@ -176,55 +178,57 @@ the doctor in the decision? Should it be a model completely autonomous?
 
 
 
+% ======================================================================
+% Ideas del gato utiles sobretodo para la segunda parte del proyecto
+
+% \section{Introduction}
+% La transplantation rénale est un traitement de référence de l’insuffisance rénale
+% terminale. Cependant, le rejet humoral demeure une cause majeure d’échec du greffon.
+% L’intégration de données multi-sources constitue un levier prometteur pour améliorer
+% les modèles prédictifs \citep{ghojogh2021rkhs}.
+
+% \section{Contexte et données}
+% \subsection{Sources de données}
+% Description des données cliniques, biologiques et génétiques utilisées, ainsi que
+% les étapes de pré-traitement.
+
+% \subsection{Problème de prédiction}
+% Définition de la variable cible, horizon temporel, métriques d’évaluation.
+
+% \section{Méthodes d’intégration de données}
+% \subsection{Synthèse bibliographique}
+% Early integration, late integration, intermediate integration, multi-view learning, kernel methods, CCA, PLS, etc.
+
+% \subsection{Méthode retenue}
+% Description détaillée de la méthode choisie et justification.
+
+% \section{Résultats}
+% \subsection{Protocole expérimental}
+% Validation croisée, modèles de référence, réglage des hyperparamètres.
+
+% \subsection{Résultats quantitatifs}
 
 
-\section{Introduction}
-La transplantation rénale est un traitement de référence de l’insuffisance rénale
-terminale. Cependant, le rejet humoral demeure une cause majeure d’échec du greffon.
-L’intégration de données multi-sources constitue un levier prometteur pour améliorer
-les modèles prédictifs \citep{ghojogh2021rkhs}.
+% \begin{table}[h]
+% \centering
+% \caption{Performances des modèles}
+% \begin{tabular}{lcc}
+% \toprule
+% Modèle & AUC & Accuracy \\
+% \midrule
+% Clinique seul & 0.71 & 0.68 \\
+% Intégration multi-vues & 0.79 & 0.74 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
 
-\section{Contexte et données}
-\subsection{Sources de données}
-Description des données cliniques, biologiques et génétiques utilisées, ainsi que
-les étapes de pré-traitement.
+% \section{Discussion}
+% Analyse critique des résultats, limites de l’étude, interprétabilité.
 
-\subsection{Problème de prédiction}
-Définition de la variable cible, horizon temporel, métriques d’évaluation.
-
-\section{Méthodes d’intégration de données}
-\subsection{Synthèse bibliographique}
-Early integration, late integration, intermediate integration, multi-view learning,
-kernel methods, CCA, PLS, etc.
-
-\subsection{Méthode retenue}
-Description détaillée de la méthode choisie et justification.
-
-\section{Résultats}
-\subsection{Protocole expérimental}
-Validation croisée, modèles de référence, réglage des hyperparamètres.
-
-\subsection{Résultats quantitatifs}
+% \section{Conclusion et perspectives}
+% Résumé des contributions et pistes futures.
 
 
-\begin{table}[h]
-\centering
-\caption{Performances des modèles}
-\begin{tabular}{lcc}
-\toprule
-Modèle & AUC & Accuracy \\
-\midrule
-Clinique seul & 0.71 & 0.68 \\
-Intégration multi-vues & 0.79 & 0.74 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Discussion}
-Analyse critique des résultats, limites de l’étude, interprétabilité.
-
-\section{Conclusion et perspectives}
-Résumé des contributions et pistes futures.
 
 % ==================================
 %  Bibliography
