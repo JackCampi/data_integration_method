@@ -6,7 +6,7 @@
 % ---------- Language & encoding ----------
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[english,spanish]{babel}
+\usepackage[english]{babel}
 
 % ---------- Geometry ----------
 \usepackage[a4paper,margin=1.5cm]{geometry}
@@ -138,19 +138,85 @@ If its coherence (Different type of data, correlation and causality,...)
 
 \section{Data integration methods}
 
-\subsection{First approach (naive?)}
-Linear combination of the variables
+\subsection{First approach}
 
-Normalizing and suming everything
+When talking about data integration from different sources, the first approach we can take in mind is to try sequential concatenation methods, being the basic one getting all information into a single complete matrix \cite{chen2023multiomics}. However, sometimes combining raw data cannot lead into better approximation as those methods do not model complex relationships between data across sources. 
 
-Simply using them all in the same data base?
+Some approaches have been proposed, as a bayesian data integration method by Brooke L et al \cite{fridley2012bayesian}, where they build a bayes framework which uses path analysis in order to represent direct and indirect genomic effects on a phenotype. 
 
-Proyection in one common space
+\textbf{EXPLICAR MATH}
+
+Some others comprises linear combination among data sources, then they employ this new combination within the classical classification/regression models. For example, Prélot L. et al \cite{prelotYEARglycaemic} proposed the calculation of scores of Metabolic and Methylation data. 
+
+Finally, even if some mechanisms have been postulated to fix the raw data concatenation problem, there still the "curse of dimensionality" as combining different scaled data can inflate hight-dimension. Thats why more complex models will be discussed on the next section.  
 
 \subsection{Modern methods and research}
 Kernel methods 
 
 Others?
+
+\subsubsection{Deep Learninng}
+
+Deep Learning models have gained importance on the recent years, as they obtain satisfactory scores on complex data relationships modeling. through the years, some classical models have been adapted to the multi-modal learning problem, making the good enough to capture information from the same problem seen from different points of view. 
+
+Even though those models can represent a good alternative to the problematic, it holds that the nature of the models keeps hard for the interpretation capacity of the phenomena, keeping them not really used, specially when taking health-related decisions. 
+
+Here we discuss how to adapt the popular models when taking multiple source data, as just combining them cannot lead to the optimal improvement of the model \citep{yan2021deepmvl}.
+
+\paragraph{Autoencoders}
+
+ model was born as the main idea of encoding input pattern $X \in R^N$ into some reduced pattern $f(X) \in R^d$, with $ d\ll N$ \cite{rumelhart1986pdp}, where we will call $R^d$ the latent space and $f : R^N \rightarrow R^d$ the encoding function. Then we define $g : R^d \rightarrow R^N$ as the decoding function and the autoencoder problem can be expressed as \cite{baldi2012autoencoders}:
+
+$$
+\min_{f,g} \sum_{i}^N \| g \circ f (x_i) \| 
+$$
+
+Now, taking in mind the multi-modal data, some authors have proposed variations to the basic model. Here we present the bimodal Autoencoder proposed by Ngiam et al. \cite{Ngiam2011689} where they build the sequential model shown before:
+
+IMAGEN
+
+*Explicar maths *
+
+However, there still another variations of the model, such as the Correlational AE proposed by BAE, Feng et al. \cite{feng2014crossmodal}, where they try to minimize the correlational learning error from each modal-data. Right before we find the $AE^2$ presented by Zhang et al. \cite{zhang2019ae2nets} witch takes two AE levels, the inner layer holds an AE for each data source and the outer manage the multi-modal integration. 
+
+Further proposals present diverse variations. Among these, we find the cross-modal auto-encoder (CMAE), the margin sensitive (MSAE) and the convolutional AE \cite{yan2021deepmvl}.
+
+\paragraph{Convolutional Neural Networks} 
+
+were first presented by Yann LeCun et al \cite{lecun2015deep} as a high level feature representation. 
+
+*Explicar maths *
+
+When taking multiple sources, there can be stabilized two kinds of architectures: multi-modal-one-net model which integrates all data sequentially into a CNN and the one-modal-one-net model which creates separates CNN for each source and then fusion them with a deep layer, as shown in the figure \cite{yan2021deepmvl}
+
+When using the one-modal-one-net mechanism we do not search to fusion the response of each model, but to include a combining mapping at the last convolutional layer. To this purpose, we define $f: x^{(i)}_n, x^{(j)}_n \rightarrow y_n$ as the fusion function. Christoph Feichtenhofer et al \cite{feichtenhofer2016twostream}. proposed and tested multiple ways of CNN fusion. Here we present some used mappings. 
+
+\begin{table}[h]
+\centering
+\caption{Multi-modal CNN fusion functions}
+\begin{tabular}{lcc}
+\toprule
+$f$ & math expression \\
+\midrule
+$y^{sum}_n$ & $y^d_n = x^{(i, d)}_n + x^{(j,d)}_n$ \\
+$y^{max}_n$ & $y^d_n = \max(x^{(i, d)}_n, x^{(j,d)}_n)$ \\
+$y^{cat}_n$ & $y^{2d}_n = x^{(i, d)}_n, y^{2d-1}_n = x^{(j,d)}_n$ \\
+$y^{conv}_n$ & $y^{conv} = y^{cat} \ast F + b$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Note $d$ is the convolution chanel, as cat method represent the concatenation of two different channels. For the convolution, note $F$ represents the filter and $b$ the biases. 
+
+\subsubsection{Probabilistic Approaches}
+Inhomogeneous Poisson process
+Bernoulli generalized linear models
+
+\subsubsection{Linear models}
+
+Generalized linear models:
+
+
 
 \subsubsection{Kernel methods}
 
@@ -171,12 +237,6 @@ accurate argument for the prediction (i.e. which indicator and why is it having
 that weight on the decision taken by the model)
 Finally, in practice an important question would be, how implied should be
 the doctor in the decision? Should it be a model completely autonomous? 
-
-
-
-
-
-
 
 \section{Introduction}
 La transplantation rénale est un traitement de référence de l’insuffisance rénale
