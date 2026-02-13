@@ -48,7 +48,7 @@
 \setlength{\FrameSep}{8pt}
 
 % ---------- No indentation ----------
-\setlength{\parindent}{10pt}
+\setlength{\parindent}{15pt}
 \setlength{\parskip}{4pt}
 \setlength{\columnsep}{0.8cm}
 
@@ -80,7 +80,7 @@ Angel ROMERO, Ana María PINZÓN
 \vspace{0.2em}
 %\begin{center}
 \small
-\textbf{Keywords:} data integration, multi-view learning, transplantation, prediction
+\textbf{Keywords:} data integration, multi-view learning, multi-modal, transplantation, prediction
 %\end{center}
 
 %\vspace{0.2em}
@@ -219,18 +219,28 @@ Kernel methods are algorithms which take the kernel function as an input. The id
 % Heterogeneous data
 This approach represents several advantages for our problem since it doesn't makes any assumptions regarding the type of data, allowing us to map elements from any general space. For example, our points can be real numbers, chains of characters, images, etc. This already starts to look good for our heterogenous type of data. Still, the problem of the integration of the data persists. 
 
-Fortunately, the kernel methods have an approach for this. Multiple Kernel Learning (MKL) were conceived to attack this sort of problems. For this, a kernel matrix is computed for each feature and then they are combined into a final kernel matrix by minimizing an objective function.\cite{Baiao2025}. One advantage for MKL methods is that the final kernel matrix can be used for downstream analysis, supporting the analyses of influencing elements in the prediction \cite{Baiao2025}.
+Fortunately, the kernel methods have an approach for this. Multiple Kernel Learning (MKL) were conceived to attack this sort of problems. For this, a kernel matrix is computed for each feature and then they are combined into a final kernel matrix by minimizing an objective function.\cite{Baiao2025}. One advantage for MKL methods is that the final kernel matrix can be used for downstream analysis, supporting the analyses of influencing elements in the prediction.
 
 In general, using multiple kernels instead of a single one boosts the prediction capacity of the model. On the other hand, combining kernels in a non-linear way apparently has better results whereas when combining complex Gaussian kernels, linear methods are more reasonable\cite{gonen2011multiple}. 
 
+% Computational cost 
+Though this methods present several advantages for machine learning practitioners, the kernel methods have efficincy problems du to the computational time thaa requieres the handling of the Gram Matrix. Whith the MKL methods this implies the handling of several martrices wich starts to get very complicated when integrating hundreds or thousands of features. 
+
 In the literature diverse mechanism of multiple kernel combination have been explored. They could be classified depending on the approach they use to stablish the problem. First approaches defined a combining fixed rule, such as summing or multiplying kernels, while future results introduce optimization approaches, heuristics formulation and a bayesian model framework. 
 
+\paragraph{Bayesian MKL}
+The Bayesian MKL is based on the Relevance Vector Machine (RVM) which is a Bayesian interpretation of the Support Vector Machine (SVM). As in the SVM, the RVM can be "kernelized" changing the inner products by a kernel using the "kernel trick". The Bayesian MKL models have been studied in the literature due to the very high computational time they require \cite{gonen2012bayesian}. But multiple attempts to make it more efficient have been proposed like the \textit{Bayesian Eﬃcient Multiple Kernel Learning} \cite{gonen2012bayesian} or the \textit{Hierarchic Bayesian Models for Kernel Learning} \cite{girolami2005hierarchic}. 
+
+According to \cite{Wilkinson2007} the Bayesian approach to biological sequence analysis has shown extremely useful. Though the conventional approach allows us to estimate the model parmeters, it is unconvinient for certain interesting problems as it is rather unsatisfactory in terms of the information provided by the analysis. The Bayesian approach suppposes the parameters to be probabilistic instead of deterministic as models have conventionnally assumed. This change in the perspective is a key benefit for our problem, since it allow proper propagation of uncertainty accross different levels of modelling \cite{Wilkinson2007}. Thus, it set a coherent mathematical framework to find the solution.
+
+Though the incertitudes are often neglected, in biological problems it is a critical aspect of the problem, even comparable with the solution itself. Biological data tends to be noisy, scarse and expensive. Bayesian solutions offer an interesting solution to the challenging inferential problems, maximising the information that can be extracted from expensive experimental data.\cite{Wilkinson2007}.
+
+
+\section{Conclusion}
 
 
 
 
-
-\section{Discussion}
 
 % How can our model trace influencing elements to give useful retour?
 
