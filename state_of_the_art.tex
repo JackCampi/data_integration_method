@@ -80,7 +80,7 @@ Angel ROMERO, Ana María PINZÓN
 \vspace{0.2em}
 %\begin{center}
 \small
-\textbf{Keywords:} data integration, multi-view learning, multi-modal, transplantation, prediction
+\textbf{Keywords:}  multi-modal data integration, multi-view learning, transplantation, prediction
 %\end{center}
 
 %\vspace{0.2em}
@@ -104,22 +104,23 @@ Angel ROMERO, Ana María PINZÓN
 
 
 % Pb amount of data
-Predictive statistical models have had historically a lot of difficulty to be implemented  in the medical field due to the heterogeneity of the biological data. This poses a problem for the unification in a single model, since the data structures are very different in nature.
-One of the main reasons is that laboratories obtain different kinds of information from the same individu such as xray images, molecular data, clinical data, etc. To sum there is not great amounts of data available because there is no standarization in many lab procedures, and also because of the cost of collecting data, and even the ethical issues that can arise from collecting data in the medical field. This poses a barrier for models which need a lot of observations to be statistically valid in the sense that they assume a huge amount of individuals to make good inferences.
+Predictive statistical models have historically faced significant difficulties in being implemented in the medical field due to the heterogeneity of biological data. This poses a challenge for unification within a single model, since the data structures are very different in nature.
 
 % Pb multi-modal data
-In this project we will work with data coming form different sources such as clinical data, demographic data, molecular data, etc. The problem here is how can we relate this variables if they do not live in the same spaces. This a problem of multi-modal data integration, which has been very researched in the later years. 
+In this project, we will work with data coming from different sources, such as clinical, demographic, and molecular data. The primary problem is how to relate these variables when they do not exist in the same vector spaces. This is a problem of multi-modal data integration, which has been extensively researched in recent years.
 
 % Multi-omics data
 Latest technologies in biology laboratories allow for molecular data collection at levels we never had before. Nowadays, we talk about multi-omics data, which analyses biological information by levels of deepness. This information comes from data sets such as the genome, proteome, transcriptome, epigenome, etc. Which is why it receives his name. This adds up to our multi-modal integration problem.
 
 % Possible discussion for improving pred. due to amount of info on an individu
-Another difficulty lies in the fact that there are not a lot of individuals in the data bases. Nevertheless, we do have access to different types of information for the same individual. The reasonable question would be if we could get better predictions correctly relating this variables between them. How to leverage this to improve our models is the question of the multiview learning.  
+Another difficulty lies in the fact that there are few individuals in the databases. This could be due to the lack of standardization in many lab procedures, the cost of data collection, and the ethical issues that arise within the medical field. This poses a barrier for models that require numerous observations to be statistically valid, as they assume a large number of individuals to make accurate inferences.
+
+Nevertheless, we do have access to different types of information for the same individual. The underlying idea is whether we could achieve better predictions by correctly relating these variables. How to leverage this to improve our models is the core question of multi-view learning.
 
 % Problem description
-For this project we are gonna discuss different ways of integrating multi-modal data (taking into account their nature) in a prediction model and test a few of them to see if we can construct a predictor of humoral rejection after kidney transplantation.
+For this project, we will discuss different ways of integrating multi-modal data (taking into account their nature) into a prediction model and test a few of them to evaluate if we can construct a predictor of humoral rejection after kidney transplantation.
 
-We start by decribing different types of data integration, passing from the first approach to the more modern approaches such as depp learning and kernel methods. We finally, select the models we think might be more suitable for our problematic. 
+We start by describing different types of data integration, ranging from early approaches to more modern techniques such as deep learning and kernel methods. Finally, we select the models we consider most suitable for our research problem.
 
 \section{Data integration methods}
 
@@ -142,39 +143,39 @@ Finally, although some mechanisms have been postulated to address the raw data c
 
 Deep learning models have gained importance in recent years, as they obtain satisfactory scores on complex data relationships modeling. Throughout the years, some classical models have been adapted to the multi-modal learning problem, making the good enough to capture information from the same problem seen from different points of view. 
 
-Even though those models can represent a good alternative to the problematic, it holds that the nature of the models keeps hard for the interpretation capacity of the phenomena, keeping them not really used, specially when taking health-related decisions. 
+Even though these models can be a good alternative to solve the problematic, their nature difficults the interpretation of the phenomena. Due to the importance of interpretability in the healthcare sector, these models are rarely used, especially for making health-related decisions. 
 
-Here we discuss how to adapt the popular models when taking multiple source data, as just combining them cannot lead to the optimal improvement of the model \citep{yan2021deepmvl}.
+Here we discuss how to adapt some popular models when using multiple source data, as just combining them does not lead to optimal improvement of the model \citep{yan2021deepmvl}.
 
 \paragraph{Autoencoders}
 
- model was born as the main idea of encoding input pattern $X \in R^N$ into some reduced pattern $f(X) \in R^d$, with $ d\ll N$ \cite{rumelhart1986pdp}, where we will call $R^d$ the latent space and $f : R^N \rightarrow R^d$ the encoding function. Then we define $g : R^d \rightarrow R^N$ as the decoding function and the autoencoder problem can be expressed as \cite{baldi2012autoencoders}:
+ This model was born with the main idea of encoding an input pattern $X \in R^N$ into some reduced pattern $f(X) \in R^d$, with $ d\ll N$ \cite{rumelhart1986pdp}, where we will call $R^d$ the latent space and $f : R^N \rightarrow R^d$ the encoding function. Then, we define $g : R^d \rightarrow R^N$ as the decoding function. The autoencoder problem can be expressed as \cite{baldi2012autoencoders}:
 
 $$
 \min_{f,g} \sum_{i}^N \| g \circ f (x_i) \| 
 $$
 
-Now, taking in mind the multi-modal data, some authors have proposed variations to the basic model. Here we present the bimodal Autoencoder proposed by Ngiam et al. \cite{Ngiam2011689} where they build the sequential model shown before:
+Taking the multi-modal data into account, some authors have proposed variations to the basic model. Here we present the bimodal Autoencoder proposed by Ngiam et al. \cite{Ngiam2011689} where they build the sequential model shown below:
 
 \includegraphics[scale=0.30]{res/AE.png}
 
 % Explicar maths
 
-However, there still another variations of the model, such as the Correlational AE proposed by BAE, Feng et al. \cite{feng2014crossmodal}, where they try to minimize the correlational learning error from each modal-data. Right before we find the $AE^2$ presented by Zhang et al. \cite{zhang2019ae2nets} witch takes two AE levels, the inner layer holds an AE for each data source and the outer manage the multi-modal integration. 
+There are still some other variations of the model. For example, the Correlational AE proposed by BAE, Feng et al. \cite{feng2014crossmodal}, which minimizes the correlational learning error from each modal-data. Next, we find the $AE^2$ presented by Zhang et al. \cite{zhang2019ae2nets} which takes two AE levels. The inner layer holds an AE for each data source and the outer layer manages the multi-modal integration. 
 
 Further proposals present diverse variations. Among these, we find the cross-modal auto-encoder (CMAE), the margin sensitive (MSAE) and the convolutional AE \cite{yan2021deepmvl}.
 
 \paragraph{Convolutional Neural Networks} 
 
-were first presented by Yann LeCun et al \cite{lecun2015deep} as a high level feature representation. 
+(CNN) were first presented by Yann LeCun et al. \cite{lecun2015deep} as a high level feature representation. 
 
 % Explicar maths
 
-When taking multiple sources, there can be stabilized two kinds of architectures: multi-modal-one-net model which integrates all data sequentially into a CNN and the one-modal-one-net model which creates separates CNN for each source and then fusion them with a deep layer \cite{yan2021deepmvl}, as shown in the figure 
+When taking multiple sources, stabilization can be achieved through two kinds of architectures: multi-modal-one-net model which integrates all data sequentially into a CNN and the one-modal-one-net model which creates a separate CNN for each source and then fusions them with a deep layer \cite{yan2021deepmvl}, as shown in the figure below:
 
 \includegraphics[scale=0.35]{res/CNN.png}
 
-When using the one-modal-one-net mechanism we do not search to fusion the response of each model, but to include a combining mapping at the last convolutional layer. To this purpose, we define $f: x^{(i)}_n, x^{(j)}_n \rightarrow y_n$ as the fusion function. Christoph Feichtenhofer et al \cite{feichtenhofer2016twostream}. proposed and tested multiple ways of CNN fusion. Here we present some used mappings. 
+When using the one-modal-one-net mechanism we do not search to fusion the response of each model, but to include a combining mapping at the last convolutional layer. To this purpose, we define $f: x^{(i)}_n, x^{(j)}_n \rightarrow y_n$ as the fusion function. Christoph Feichtenhofer et al. \cite{feichtenhofer2016twostream}. proposed and tested multiple ways of CNN fusion. Here we present some commonly used mappings: 
 
 \begin{table}[h]
 \centering
@@ -191,14 +192,14 @@ $y^{conv}_n$ & $y^{conv} = y^{cat} \ast F + b$ \\
 \end{tabular}
 \end{table}
 
-Note $d$ is the convolution chanel, as cat method represent the concatenation of two different channels. For the convolution, note $F$ represents the filter and $b$ the biases. 
+Where $d$ is the convolution chanel, as the $cat$ fusion function represents the concatenation of two different channels. For the convolution, $F$ stands for the filter and $b$ stands for the biases. 
 
 
 
 \subsubsection{Kernel methods}
 
 % Kernel methods
-A kernel $K$ is a mapping which takes two elements from an arbitrary space and assigns them a real number ($K : \mathcal{X} \times \mathcal{X} \longrightarrow \mathbb{R}$). It can be seen as a "similarity" function. It is symmetric since the resemblance from one element $x_i$ to $x_j$ is exactly the same as the resemblance of $x_j$ to $x_i$. The kernel function can also be seen as the mapping $\phi : \mathcal{X} \longrightarrow \mathcal{F} $ which satisfies 
+A kernel $K$ is a mapping that takes two elements from an arbitrary set and assigns them a real number ($K : \mathcal{X} \times \mathcal{X} \longrightarrow \mathbb{R}$). It can be viewed as a "similarity" function. The kernel function can also be written as the mapping $\phi : \mathcal{X} \longrightarrow \mathcal{F} $ which satisfies 
 
 $$
 k(x,x')=<\phi(x),\phi(x')>_\mathcal{F}
@@ -206,105 +207,37 @@ $$
 
 The kernel matrix or Gram matrix $ \mathbf{K} \in \mathbb{R}^{n \times n} $ is the symmetric matrix $K_{ij}  = k(x_i,x_j)$ for $i=1,2,...,n$, which must be positive semi-definite \cite{mva_kernels_2022}. 
 
-Kernel methods are algorithms which take the kernel function as an input. The idea behind the kernel methods is to map the data into higher-dimensional spaces where it is nicer to do machine learning. Or, in other words, the points are mapped into a space where they are more easily separable. The interesting thing is that in this new space the points are now represented by their kernel function. 
+Kernel methods are algorithms that use kernel function as inputs. The idea behind is to map the data into higher-dimensional spaces where it is nicer to do machine learning. In other words, the points are mapped into a space where they are more easily separable. Interestingly, in this new space, the points are represented by their kernel function. 
 
 % Heterogeneous data
-This approach represents several advantages for our problem since it doesn't makes any assumptions regarding the type of data, allowing us to map elements from any general space. For example, our points can be real numbers, chains of characters, images, etc. This already starts to look good for our heterogenous type of data. Still, the problem of the integration of the data persists. 
+This approach has several advantages for our problem because it doesn't make any assumptions regarding the type of data. This allows us to map elements from any general space. For instance, our points could be real numbers, chains of characters, images, and so on. This is promising for our heterogeneous type of data. However, the problem of integrating the data persists. 
 
-Fortunately, the kernel methods have an approach for this. Multiple Kernel Learning (MKL) were conceived to attack this sort of problems. For this, a kernel matrix is computed for each feature and then they are combined into a final kernel matrix by minimizing an objective function.\cite{Baiao2025}. One advantage for MKL methods is that the final kernel matrix can be used for downstream analysis, supporting the analyses of influencing elements in the prediction.
+Fortunately, kernel methods offer an approach to this problem. Multiple Kernel Learning (MKL) was developed to attack this sort of problems. First, a kernel matrix is computed for each feature. Then, they are combined into a final kernel matrix by minimizing an objective function.\cite{Baiao2025}. One advantage of MKL methods is that the final kernel matrix can be used for downstream analysis, supporting the analysis of influencing elements in the prediction.
 
-In general, using multiple kernels instead of a single one boosts the prediction capacity of the model. On the other hand, combining kernels in a non-linear way apparently has better results whereas when combining complex Gaussian kernels, linear methods are more reasonable\cite{gonen2011multiple}. 
+In general, using multiple kernels instead of a single one boosts the model's prediction capacity. On the other hand, combining kernels nonlinearly apparently yields better results whereas when combining complex Gaussian kernels, linear methods are more reasonable\cite{gonen2011multiple}. 
 
 % Computational cost 
-Though this methods present several advantages for machine learning practitioners, the kernel methods have efficincy problems du to the computational time thaa requieres the handling of the Gram Matrix. Whith the MKL methods this implies the handling of several martrices wich starts to get very complicated when integrating hundreds or thousands of features. 
+Though these methods present several advantages for machine learning practitioners, kernel methods have efficiency problems due to the computational time required to handle the Gram Matrix. Whith MKL methods this involves handling several martrices, which becomes very complicated when integrating hundreds or thousands of features. 
 
-In the literature diverse mechanism of multiple kernel combination have been explored. They could be classified depending on the approach they use to stablish the problem. First approaches defined a combining fixed rule, such as summing or multiplying kernels, while future results introduce optimization approaches, heuristics formulation and a bayesian model framework. 
+In the literature diverse mechanism of multiple kernel combination have been explored. They could be classified depending on the approach they use to stablish the problem. First approaches defined a combining fixed rule, such as summing or multiplying kernels, while future results introduce optimization approaches, heuristic formulations and a bayesian model framework. 
 
 \paragraph{Bayesian MKL}
-The Bayesian MKL is based on the Relevance Vector Machine (RVM) which is a Bayesian interpretation of the Support Vector Machine (SVM). As in the SVM, the RVM can be "kernelized" changing the inner products by a kernel using the "kernel trick". The Bayesian MKL models have been studied in the literature due to the very high computational time they require \cite{gonen2012bayesian}. But multiple attempts to make it more efficient have been proposed like the \textit{Bayesian Eﬃcient Multiple Kernel Learning} \cite{gonen2012bayesian} or the \textit{Hierarchic Bayesian Models for Kernel Learning} \cite{girolami2005hierarchic}. 
+The Bayesian MKL is based on the Relevance Vector Machine (RVM) which is a Bayesian interpretation of the Support Vector Machine (SVM). As with the SVM, the RVM can be "kernelized" changing the inner products by a kernel using the "kernel trick". The Bayesian MKL models have been studied in the literature due to the very high computational time they require \cite{gonen2012bayesian}. However, multiple attempts have been proposed to make it more efficient such as the \textit{Bayesian Eﬃcient Multiple Kernel Learning} \cite{gonen2012bayesian} and the \textit{Hierarchic Bayesian Models for Kernel Learning} \cite{girolami2005hierarchic}. 
 
-According to \cite{Wilkinson2007} the Bayesian approach to biological sequence analysis has shown extremely useful. Though the conventional approach allows us to estimate the model parmeters, it is unconvinient for certain interesting problems as it is rather unsatisfactory in terms of the information provided by the analysis. The Bayesian approach suppposes the parameters to be probabilistic instead of deterministic as models have conventionnally assumed. This change in the perspective is a key benefit for our problem, since it allow proper propagation of uncertainty accross different levels of modelling \cite{Wilkinson2007}. Thus, it set a coherent mathematical framework to find the solution.
+According to \cite{Wilkinson2007} the Bayesian approach to biological sequence analysis has proven to be extremely useful. Though the conventional approach allows us to estimate the model parameters, it is inconvenient for certain interesting problems because it provides unsatisfactory information for analysis. The Bayesian approach assumes the parameters to be probabilistic instead of deterministic, as conventional models assume. This change in the perspective is key to solve our problem since it allows proper propagation of uncertainty accross different levels of modeling \cite{Wilkinson2007}. Thus, it establishes a coherent mathematical framework for finding the solution.
 
-Though the incertitudes are often neglected, in biological problems it is a critical aspect of the problem, even comparable with the solution itself. Biological data tends to be noisy, scarse and expensive. Bayesian solutions offer an interesting solution to the challenging inferential problems, maximising the information that can be extracted from expensive experimental data.\cite{Wilkinson2007}.
+Though the incertitudes are often neglected, they are a critical aspect of biological problems, even comparable to the solution itself. Biological data tends to be noisy, scarce and expensive. Bayesian solutions offer an interesting approach to challenging inferential problems, maximising the information that can be extracted from expensive experimental data.\cite{Wilkinson2007}.
 
 
 \section{Conclusion}
 
-% Pb amount of data
-Predictive statistical models have had historically a lot of difficulty to be implemented  in the medical field due to the heterogeneity of the biological data. This poses a problem for the unification in a single model, since the data structures are very different in nature.One of the main reasons is that laboratories obtain different kinds of information from the same individu such as xray images, molecular data, clinical data, etc. To sum there is not great amounts of data available because there is no standarization in many lab procedures, and also because of the cost of collecting data, and even the ethical issues that can arise from collecting data in the medical field. This presents a barrier for models which need a lot of observations to be statistically valid in the sense that they assume a huge amount of individuals to make good inferences.
+Predictive statistical models have difficulty being implemented in the medical field due to the heterogeneity of biological data. Different types of models have been developed to tackle this problem, ranging from the naive attempt of concatenating everything into a single matrix to more modern, complex models such as deep learning and multiple kernel learning (MKL).
 
+Some methods have proven to be efficient in the integration of multi-modal data, improving the modeling of complex relationships across sources. However, methods such as deep learning present difficulties in the interpretability of results because the latent space does not necessarily have a physical representation. This is added to the difficulty of training a neural network with only a few hundred or thousand data points.
 
-Limitations (are they mathematical or simply it is not coherent with the problem?)
+Multiple kernel learning methods offer interesting advantages to overcome the multi-modal problem but struggle with high-dimensionality. Multiple approaches have been proposed to improve the computational efficiency of these models. Also, the resulting kernel matrix can be used for downstream analysis, supporting the identification of influencing elements in the prediction, which is crucial for making health-related decisions. This also allows us to take into consideration the risk of the decisions taken by the machine.
 
-% How can our model trace influencing elements to give useful retour?
-
-
-Rigourus enough?
-
-Precission? 
-
-Risk : How much risk would be tolerable for decision making in the 
-medical field?
-
-Interpretability? In the medical field, the models have to be precise and have an
-accurate argument for the prediction (i.e. which indicator and why is it having
-that weight on the decision taken by the model)
-Finally, in practice an important question would be, how implied should be
-the doctor in the decision? Should it be a model completely autonomous? 
-
-
-
-
-
-% ======================================================================
-% Ideas del gato utiles sobretodo para la segunda parte del proyecto
-
-% \section{Introduction}
-% La transplantation rénale est un traitement de référence de l’insuffisance rénale
-% terminale. Cependant, le rejet humoral demeure une cause majeure d’échec du greffon.
-% L’intégration de données multi-sources constitue un levier prometteur pour améliorer
-% les modèles prédictifs \citep{ghojogh2021rkhs}.
-
-% \section{Contexte et données}
-% \subsection{Sources de données}
-% Description des données cliniques, biologiques et génétiques utilisées, ainsi que
-% les étapes de pré-traitement.
-
-% \subsection{Problème de prédiction}
-% Définition de la variable cible, horizon temporel, métriques d’évaluation.
-
-% \section{Méthodes d’intégration de données}
-% \subsection{Synthèse bibliographique}
-% Early integration, late integration, intermediate integration, multi-view learning, kernel methods, CCA, PLS, etc.
-
-% \subsection{Méthode retenue}
-% Description détaillée de la méthode choisie et justification.
-
-% \section{Résultats}
-% \subsection{Protocole expérimental}
-% Validation croisée, modèles de référence, réglage des hyperparamètres.
-
-% \subsection{Résultats quantitatifs}
-
-
-% \begin{table}[h]
-% \centering
-% \caption{Performances des modèles}
-% \begin{tabular}{lcc}
-% \toprule
-% Modèle & AUC & Accuracy \\
-% \midrule
-% Clinique seul & 0.71 & 0.68 \\
-% Intégration multi-vues & 0.79 & 0.74 \\
-% \bottomrule
-% \end{tabular}
-% \end{table}
-
-% \section{Discussion}
-% Analyse critique des résultats, limites de l’étude, interprétabilité.
-
-% \section{Conclusion et perspectives}
-% Résumé des contributions et pistes futures.
+MKL methods show promising progress in healthcare data analysis, but there is still an important issue: the uncertainty of the result. In this regard, Bayesian inference presents a good alternative. Bayesian Multiple Kernel Learning methods seem well-adapted to the problem, offering an approachable way of integrating data, analyzing results, and obtaining the uncertainty of the predictions. This is why we will present an implementation of this model, as well as an analysis of the results and a comparison with other models.
 
 
 
