@@ -164,7 +164,7 @@ $$
 
 Now, taking in mind the multi-modal data, some authors have proposed variations to the basic model. Here we present the bimodal Autoencoder proposed by Ngiam et al. \cite{Ngiam2011689} where they build the sequential model shown before:
 
-IMAGEN
+\includegraphics[scale=0.30]{res/AE.png}
 
 *Explicar maths *
 
@@ -178,7 +178,9 @@ were first presented by Yann LeCun et al \cite{lecun2015deep} as a high level fe
 
 *Explicar maths *
 
-When taking multiple sources, there can be stabilized two kinds of architectures: multi-modal-one-net model which integrates all data sequentially into a CNN and the one-modal-one-net model which creates separates CNN for each source and then fusion them with a deep layer, as shown in the figure \cite{yan2021deepmvl}
+When taking multiple sources, there can be stabilized two kinds of architectures: multi-modal-one-net model which integrates all data sequentially into a CNN and the one-modal-one-net model which creates separates CNN for each source and then fusion them with a deep layer \cite{yan2021deepmvl}, as shown in the figure 
+
+\includegraphics[scale=0.35]{res/CNN.png}
 
 When using the one-modal-one-net mechanism we do not search to fusion the response of each model, but to include a combining mapping at the last convolutional layer. To this purpose, we define $f: x^{(i)}_n, x^{(j)}_n \rightarrow y_n$ as the fusion function. Christoph Feichtenhofer et al \cite{feichtenhofer2016twostream}. proposed and tested multiple ways of CNN fusion. Here we present some used mappings. 
 
@@ -199,14 +201,6 @@ $y^{conv}_n$ & $y^{conv} = y^{cat} \ast F + b$ \\
 
 Note $d$ is the convolution chanel, as cat method represent the concatenation of two different channels. For the convolution, note $F$ represents the filter and $b$ the biases. 
 
-\subsubsection{Probabilistic Approaches}
-Inhomogeneous Poisson process
-Bernoulli generalized linear models
-
-\subsubsection{Linear models}
-
-Generalized linear models:
-
 
 
 \subsubsection{Kernel methods}
@@ -223,13 +217,13 @@ The kernel matrix or Gram matrix $ \mathbf{K} \in \mathbb{R}^{n \times n} $ is t
 Kernel methods are algorithms which take the kernel function as an input. The idea behind the kernel methods is to map the data into higher-dimensional spaces where it is nicer to do machine learning. Or, in other words, the points are mapped into a space where they are more easily separable. The interesting thing is that in this new space the points are now represented by their kernel function. 
 
 % Heterogeneous data
-This approach represents several advantages for our problem since it doesn't makes any assumtions regarding the type of data, allowing us to map elements from any general space. For example, our points can be real numbers, chains of characters, images, etc. This already starts to look good for our heterogenious type of data. Still, the problem of the integration of the data persists. 
+This approach represents several advantages for our problem since it doesn't makes any assumptions regarding the type of data, allowing us to map elements from any general space. For example, our points can be real numbers, chains of characters, images, etc. This already starts to look good for our heterogenous type of data. Still, the problem of the integration of the data persists. 
 
 Fortunately, the kernel methods have an approach for this. Multiple Kernel Learning (MKL) were conceived to attack this sort of problems. For this, a kernel matrix is computed for each feature and then they are combined into a final kernel matrix by minimizing an objective function.\cite{Baiao2025}. One advantage for MKL methods is that the final kernel matrix can be used for downstream analysis, supporting the analyses of influencing elements in the prediction \cite{Baiao2025}.
 
-In general, using multiple kernels instead of a single one boosts the prediction capacity of the model. On the other hand, combining kernels in a non-linear way apperntly has better results whereas when combibibg complex Gaussian kernels, linear methods are more reasonable\cite{gonen2011multiple}. 
+In general, using multiple kernels instead of a single one boosts the prediction capacity of the model. On the other hand, combining kernels in a non-linear way apparently has better results whereas when combining complex Gaussian kernels, linear methods are more reasonable\cite{gonen2011multiple}. 
 
-
+In the literature diverse mechanism of multiple kernel combination have been explored. They could be classified depending on the approach they use to stablish the problem. First approaches defined a combining fixed rule, such as summing or multiplying kernels, while future results introduce optimization approaches, heuristics formulation and a bayesian model framework. 
 
 
 
