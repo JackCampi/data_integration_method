@@ -227,6 +227,126 @@ According to \cite{Wilkinson2007} the Bayesian approach to biological sequence a
 
 Though the incertitudes are often neglected, in biological problems it is a critical aspect of the problem, even comparable with the solution itself. Biological data tends to be noisy, scarse and expensive. Bayesian solutions offer an interesting solution to the challenging inferential problems, maximising the information that can be extracted from expensive experimental data.\cite{Wilkinson2007}.
 
+\subsubsection{Hierarchic Bayesian Model for MKL}
+
+Thanks to Girolami et al. \cite{girolami2005hierarchic}. We got a first implementation of a bayes model in a multiple kernel learning problem. They provide the mathematical framework by implementing a variational bayes formulation for getting the parameter estimations. 
+
+\paragraph{HerarchiHierarchic Probabilistic Model} is the first step to be defined, so we start with the bayes approach by treating parameters as random variables depending on some other random variables we call priors. i.e $\theta  \sim P(\theta \mid \lambda)$ and $\lambda \sim P(\lambda)$ 
+
+We define the problem for $t = [t_1, \cdots, t_N ]$ inputs and $X = [x_1, \cdots, x_N]$ data points as a Kernel regression formulated by
+
+$$
+y_n = \sum^N_{m=0} \alpha_m \sum^K_{k=0} \beta_k K_k (x_m, x_n)
+$$
+
+where we can write $K_{\beta} \in \mathbf{R}^{N \times N+1}$, so the problem become 
+
+$$
+y = K_{\beta}\alpha
+$$
+
+With $\beta \in \mathbf{R}^K$ and $\alpha \in \mathbb{R}^{N+1}$
+
+Now we use the bayes scheme presented by Girolami and showed in the following figure
+
+\includegraphics[scale=0.25]{res/BMKL.png}
+
+Where we place, as in the referenced document, the following prior distributions. 
+
+\begin{align*}
+    t \mid \alpha, \beta, \gamma, X &\sim N_t(K_{\beta}\alpha, I\gamma^{-1}) \\
+    \gamma \mid \rho, \varrho &\sim \Gamma_{\gamma}(\rho, \varrho) \\
+    \alpha \mid \phi &\sim N_{\alpha}(0, \phi^{-1}) \\
+    \phi \mid \sigma, \zeta  &\sim \prod^N_{m=0} \Gamma_{\phi m}(\sigma, \zeta) \\
+    \beta \mid \varphi &\sim \mathcal{D}_{\beta}(\varphi) \\
+    \varphi \mid \tau, \nu &\sim \prod^K_{k=1} \Gamma_{\varphi k}(\tau, \nu) \\
+\end{align*}
+
+Where $\phi = diag(\phi_0, \cdots, \phi_N)$ and $\mathcal{D}(a)$ represents the dirichlet distribution with mean $\phi$. 
+
+\paragraph{Posterior Over Parameters} is the second step in the Bayesian model. Even if a Gibbs sampler can be implemented, they prefer to use a variational Bayes to estimate the posterior probabilities and its momentums. 
+
+So we first define
+
+\begin{align*}
+    \Theta &= {\alpha, \beta, \gamma, \phi, \varphi} \\
+    \Psi &= {\sigma, \zeta, \rho, \varrho, \tau, \nu}
+\end{align*}
+
+Then the posterior we search for is given by,
+
+$$
+P(\Theta, \Psi, \mid t, X)
+$$
+
+Then they propose to use II Maximum Likelihood for estimating $\Phi$ and then look for $P(\Theta \mid \Psi, t, X)$
+
+Now, thanks to the Jensen inequality we can give a lower bound to the likelihood by approximating the posterior as,
+
+$$
+P(\Theta \mid \Psi, t, X) \backsimeq q(\alpha)q(\beta)q(\gamma)q(\phi)q(\varphi)
+$$
+
+Where $q(\theta)$ represents the optimal distribution associated with the parameter $\theta$. 
+
+Now, taking into account the distributions families of the parameters, we can maximize the lower bound due to the fact that $q(\theta) \propto exp(E_{q(\theta)}[\log P(t, \theta \mid \Psi)])$, where $E_p[a]$ represents the expectation of a random variable $a$ with respect to the density $p$. 
+
+Introducing $\widetilde{a} = E_{q(a)} [a]$ notation and with $K_{in} \in \mathbf{R}^{N+1}$ the vector of the kernel values from the $i-th$ kernel for the data point $n$. Then the optimal distribution associated with $\alpha$ can be written as,
+
+$$
+q(\alpha) = N_{\alpha}(m_{\alpha}, \Sigma_{\alpha})
+$$
+
+Where its params are defined as,
+
+\begin{align*}
+    \Sigma_{\alpha} &= \left[ \widetilde{\gamma} \sum^K_{i=1} \sum^K_{j=1} \widetilde{\beta_i \beta_j} \sum^N_{n=1} K_in K_jn^T + \widetilde{\phi} \right]^{-1} \\
+    m_{\alpha} &= \widetilde{\gamma} \Sigma_{\alpha} \sum^N_{n=1} t_n \sum^K_{k=1} \widetilde{\beta_k}K_{kn}
+\end{align*}
+
+The optimal distribution associated with $\phi$ and its moment can be expressed as,
+
+\begin{align*}
+    q(\phi) &= \prod^N_{n=1} \Gamma_{\phi m}\left( \sigma + \frac{1}{2}, \frac{1}{2}\widetilde{\alpha_m^2} + \zeta \right) \\
+    \widetilde{\phi_m} &= \frac{1 + 2 \sigma}{\widetilde{\alpha^2_m} + 2 \zeta}
+\end{align*}
+
+For $\gamma$ parameter, the optimal distribution and the moment is then, 
+
+\begin{align*}
+    q(\gamma) &= \Gamma_{\gamma}\left( \frac{N}{2} + \rho, \frac{1}{2}\left\lVert \widetilde{e} \right\rVert^2  + \varrho \right) \\
+    \widetilde{\gamma} &= \frac{N + 2 \rho}{\left\lVert \widetilde{e} \right\rVert^2 + 2 \varrho}
+\end{align*}
+
+Where, 
+
+\begin{align*}
+    \left\lVert \widetilde{e} \right\rVert^2 = \sum^N_{n=1} t^2_n - 2 \sum^N_{n=1} t_n \sum^K_{k=1} \widetilde{\beta_k}\widetilde{\alpha}^T K^{kn} \\ 
++ \sum^K_{i=1}\sum^K_{j=1} \widetilde{\beta_i \beta_j} \sum^N_{n=1}K_{in}^T\widetilde{\alpha \alpha^T}K_{jn}
+\end{align*}
+
+Finally, as $\beta$ and $\phi$ do not form the same distribution family, the optimal distribution cannot be found. Girolami et al propose to use importance sampling method to compute the posterior and its moment
+
+\paragraph{Prediction} $y^*$ can be performed for a new point $x^*$ by using $P(t^* \mid x^*, t, X)$. Or, we can approximate the result by 
+
+$$
+\int P(t^* \mid x^*, t, X, \alpha, \beta, \gamma) q(\alpha)q(\beta)q(\gamma) d\alpha d\beta d\gamma 
+$$
+
+And if we take the posterior mean $\widetilde{\beta}$, $\widetilde{\gamma}$, due to the conjugate form of the posterior and the likelihood we can write the prediction as,
+
+$$
+\int P(t^* \mid x^*, t, X, \alpha, \widetilde{\beta}, \widetilde{\gamma}) q(\alpha)d\alpha 
+$$
+
+With its associated moments,
+
+\begin{align*}
+    \widetilde{t^*} &= \widetilde{\beta}^T k(x) m_{\alpha} \\
+    \widetilde{\sigma^*} &= \widetilde{\gamma}^{-1} + \widetilde{\beta}^T K(x)^T \Sigma_{\alpha} K(x) \widetilde{\beta}
+\end{align*}
+
+Where $K(x) \in \mathbf{R}^{N+1 \times K}$ is the kernel values between the new data point and the whole dataset. 
 
 \section{Conclusion}
 
