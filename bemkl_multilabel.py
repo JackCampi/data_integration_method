@@ -31,7 +31,7 @@ def _cho_inv(A: np.ndarray) -> np.ndarray:
     """
     n   = A.shape[0]
     A   = _sym(A)
-    eps = max(1e-10, 1e-10 * float(np.max(np.abs(np.diag(A)))))
+    eps = max(1e-8, 1e-8 * float(np.max(np.abs(np.diag(A)))))
     for _ in range(20):                          # up to eps ~ 1e9 × start
         try:
             c, low = sla.cho_factor(A + eps * np.eye(n),
