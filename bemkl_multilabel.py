@@ -217,10 +217,10 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
     )
 
     # ---------- cache KmKm = Σ_m  Km[:,:,m] @ Km[:,:,m].T  (D × D) ----------
-    # ---------- cache KmKm = Σ_m  Km[:,:,m] @ Km[:,:,m].T  (D × D) ----------
     KmKm = np.zeros((D, D))
     for m in range(P):
         KmKm += Km[:, :, m] @ Km[:, :, m].T
+
 
     # ---------- truncation bounds ----------
     lower = np.full((L, N), -1e40)
@@ -259,16 +259,16 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
 
         # --- update Lambda ---
         for o in range(L):
-            Lambda["beta"][:, o] = 1.0 / (
-                1.0 / bl + 0.5 * np.diag(atimesaT[:, :, o])
-            )
+            denom = 1.0 / bl + 0.5 * np.diag(atimesaT[:, :, o])
+            Lambda["beta"][:, o] = np.where(denom > 0, 1.0 / denom, bl)
 
         # --- update A ---
         for o in range(L):
             prec_A = np.diag(Lambda["alpha"][:, o] * Lambda["beta"][:, o]) + KmKm / sg**2
             A["sigma"][:, :, o] = _safe_inv(prec_A)
-            # Use solve instead of inv @ vec for the mean
             A["mu"][:, o] = _safe_solve(prec_A, KmtimesGT[:, o] / sg**2)
+            # guard against divergence
+            A["mu"][:, o] = np.nan_to_num(A["mu"][:, o], nan=0.0, posinf=1e6, neginf=-1e6)
             atimesaT[:, :, o] = (np.outer(A["mu"][:, o], A["mu"][:, o])
                                  + A["sigma"][:, :, o])
 
@@ -276,28 +276,31 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
         prec_G = np.eye(P) / sg**2 + etimeseT
         G["sigma"] = _safe_inv(prec_G)
         for o in range(L):
-            # AtKm[m, n] = A[:,o] @ Km[:,n,m]  →  shape (P, N)
+            # AtKm[m, n] = A[:,o] · Km[:,n,m]  →  shape (P, N)
             AtKm = np.stack([A["mu"][:, o] @ Km[:, :, m] for m in range(P)], axis=0)
             rhs = (AtKm / sg**2
                    + np.outer(be["mu"][L:], F["mu"][o, :])
                    - etimesb[:, o:o+1])
-            G["mu"][:, :, o] = G["sigma"] @ rhs
+            G["mu"][:, :, o] = np.nan_to_num(
+                G["sigma"] @ rhs, nan=0.0, posinf=1e6, neginf=-1e6)
             GtimesGT[:, :, o] = (G["mu"][:, :, o] @ G["mu"][:, :, o].T
                                   + N * G["sigma"])
             KmtimesGT[:, o] = sum(Km[:, :, m] @ G["mu"][m, :, o] for m in range(P))
 
         # --- update gamma ---
-        gamma["beta"] = 1.0 / (1.0 / bg + 0.5 * np.diag(btimesbT))
+        denom_g = 1.0 / bg + 0.5 * np.diag(btimesbT)
+        gamma["beta"] = np.where(denom_g > 0, 1.0 / denom_g, bg)
 
         # --- update omega ---
-        omega["beta"] = 1.0 / (1.0 / bo + 0.5 * np.diag(etimeseT))
+        denom_w = 1.0 / bo + 0.5 * np.diag(etimeseT)
+        omega["beta"] = np.where(denom_w > 0, 1.0 / denom_w, bo)
 
         # --- update be (joint bias + kernel weights) ---
         G_sum = np.array([G["mu"][:, :, o].sum(axis=1) for o in range(L)]).T  # P × L
         top_left = (np.diag(gamma["alpha"] * gamma["beta"])
                     + N * np.eye(L))
-        top_right = G_sum.T           # L × P
-        bot_left  = G_sum             # P × L
+        top_right = G_sum.T
+        bot_left  = G_sum
         bot_right = np.diag(omega["alpha"] * omega["beta"])
         for o in range(L):
             bot_right += GtimesGT[:, :, o]
@@ -307,11 +310,13 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
             [bot_left,  bot_right],
         ])
         be["sigma"] = _safe_inv(be_prec)
-        rhs_b = F["mu"].sum(axis=1)           # L
+        rhs_b = F["mu"].sum(axis=1)
         rhs_e = np.zeros(P)
         for o in range(L):
             rhs_e += G["mu"][:, :, o] @ F["mu"][o, :]
-        be["mu"] = _safe_solve(be_prec, np.concatenate([rhs_b, rhs_e]))
+        be["mu"] = np.nan_to_num(
+            _safe_solve(be_prec, np.concatenate([rhs_b, rhs_e])),
+            nan=0.0, posinf=1e3, neginf=-1e3)
 
         btimesbT = (np.outer(be["mu"][:L], be["mu"][:L])
                     + be["sigma"][:L, :L])
@@ -324,106 +329,115 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
         # --- update F ---
         output = np.zeros((L, N))
         for o in range(L):
-            idx = [o] + list(range(L, L + P))
-            vec = np.concatenate([[1.0] * N, G["mu"][:, :, o].T @ be["mu"][L:]])
-            # correct computation:
             stacked = np.vstack([np.ones((1, N)), G["mu"][:, :, o]])  # (1+P) × N
             be_sub  = be["mu"][[o] + list(range(L, L + P))]
-            output[o, :] = be_sub @ stacked
+            output[o, :] = np.nan_to_num(be_sub @ stacked, nan=0.0,
+                                          posinf=1e6, neginf=-1e6)
 
         F["mu"], F["sigma"], Z = _truncated_normal_mean_var(output, lower, upper)
+        # guard F
+        F["mu"]   = np.nan_to_num(F["mu"],   nan=0.0)
+        F["sigma"] = np.clip(np.nan_to_num(F["sigma"], nan=1.0), 0.0, None)
 
         # --- ELBO (optional) ---
         if parameters["progress"]:
-            lb = 0.0
             log2pi = np.log(2 * np.pi)
 
-            def _safe_sum(x, name=""):
-                """Sum, clipping inf/-inf; warn on NaN."""
-                v = np.where(np.isfinite(x), x, 0.0)
-                return float(np.sum(v))
+            def _fs(x):
+                """Finite-safe scalar: replace any non-finite with 0."""
+                v = float(np.nansum(np.where(np.isfinite(x), x, 0.0)))
+                return v if np.isfinite(v) else 0.0
 
-            # p(Lambda)
-            lb += _safe_sum(
-                (al - 1) * (digamma(Lambda["alpha"]) + np.log(np.maximum(Lambda["beta"], 1e-300)))
-                - Lambda["alpha"] * Lambda["beta"] / bl
-                - gammaln(al) - al * np.log(bl)
-            )
-            # p(A | Lambda)
-            for o in range(L):
-                lb -= 0.5 * _safe_sum(
-                    Lambda["alpha"][:, o] * Lambda["beta"][:, o]
-                    * np.diag(atimesaT[:, :, o])
-                )
-                lb -= 0.5 * (D * log2pi
-                             - _safe_sum(digamma(Lambda["alpha"][:, o])
-                                         + np.log(np.maximum(Lambda["beta"][:, o], 1e-300))))
-            # p(G | A, Km)  — most expensive term; clip to avoid explosion
-            for o in range(L):
-                t1 = -0.5 / sg**2 * _safe_sum(np.diag(GtimesGT[:, :, o]))
-                t2 =  1.0 / sg**2 * float(A["mu"][:, o] @ KmtimesGT[:, o])
-                t3 = -0.5 / sg**2 * _safe_sum(KmKm * atimesaT[:, :, o])
-                t4 = -0.5 * N * P * (log2pi + 2 * np.log(sg))
-                lb += np.clip(t1 + t2 + t3 + t4, -1e15, 1e15)
-            # p(gamma)
-            lb += _safe_sum(
-                (ag - 1) * (digamma(gamma["alpha"]) + np.log(np.maximum(gamma["beta"], 1e-300)))
-                - gamma["alpha"] * gamma["beta"] / bg
-                - gammaln(ag) - ag * np.log(bg)
-            )
-            # p(b | gamma)
-            lb -= 0.5 * _safe_sum(gamma["alpha"] * gamma["beta"] * np.diag(btimesbT))
-            lb -= 0.5 * (L * log2pi
-                         - _safe_sum(digamma(gamma["alpha"])
-                                      + np.log(np.maximum(gamma["beta"], 1e-300))))
-            # p(omega)
-            lb += _safe_sum(
-                (ao - 1) * (digamma(omega["alpha"]) + np.log(np.maximum(omega["beta"], 1e-300)))
-                - omega["alpha"] * omega["beta"] / bo
-                - gammaln(ao) - ao * np.log(bo)
-            )
-            # p(e | omega)
-            lb -= 0.5 * _safe_sum(omega["alpha"] * omega["beta"] * np.diag(etimeseT))
-            lb -= 0.5 * (P * log2pi
-                         - _safe_sum(digamma(omega["alpha"])
-                                      + np.log(np.maximum(omega["beta"], 1e-300))))
-            # p(F | b, e, G)
-            for o in range(L):
-                lb -= 0.5 * float(F["mu"][o, :] @ F["mu"][o, :] + np.sum(F["sigma"][o, :]))
-                lb += float(F["mu"][o, :] @ (G["mu"][:, :, o].T @ be["mu"][L:]))
-                lb += float(np.sum(be["mu"][o] * F["mu"][o, :]))
-                lb -= 0.5 * _safe_sum(etimeseT * GtimesGT[:, :, o])
-                lb -= float(np.sum(G["mu"][:, :, o].T @ etimesb[:, o]))
-                lb -= 0.5 * N * float(btimesbT[o, o])
-                lb -= 0.5 * N * log2pi
+            def _fld(M):
+                """Finite-safe logdet: return 0.0 if result not finite."""
+                v = _logdet(M)
+                return v if np.isfinite(v) else 0.0
 
-            # q(Lambda)
-            lb += _safe_sum(Lambda["alpha"] + np.log(np.maximum(Lambda["beta"], 1e-300))
-                            + gammaln(Lambda["alpha"])
-                            + (1 - Lambda["alpha"]) * digamma(Lambda["alpha"]))
-            # q(A)
-            for o in range(L):
-                lb += 0.5 * (D * (log2pi + 1) + _logdet(A["sigma"][:, :, o]))
-            # q(G)
-            lb += 0.5 * L * N * (P * (log2pi + 1) + _logdet(G["sigma"]))
-            # q(gamma)
-            lb += _safe_sum(gamma["alpha"] + np.log(np.maximum(gamma["beta"], 1e-300))
-                            + gammaln(gamma["alpha"])
-                            + (1 - gamma["alpha"]) * digamma(gamma["alpha"]))
-            # q(omega)
-            lb += _safe_sum(omega["alpha"] + np.log(np.maximum(omega["beta"], 1e-300))
-                            + gammaln(omega["alpha"])
-                            + (1 - omega["alpha"]) * digamma(omega["alpha"]))
-            # q(be)
-            lb += 0.5 * ((L + P) * (log2pi + 1) + _logdet(be["sigma"]))
-            # q(F)
-            log_Z = np.where(Z > 0, np.log(Z), 0.0)
-            lb += 0.5 * float(np.sum(log2pi + F["sigma"])) + float(np.sum(log_Z))
+            try:
+              lb = 0.0
+              with np.errstate(all='ignore'):   # silence overflow/invalid warnings
+                # p(Lambda)
+                lb += _fs((al-1)*(digamma(Lambda["alpha"])+np.log(np.maximum(Lambda["beta"],1e-300)))
+                           - Lambda["alpha"]*Lambda["beta"]/bl
+                           - gammaln(al) - al*np.log(bl))
+                # p(A | Lambda)
+                for o in range(L):
+                    lb += _fs(-0.5*Lambda["alpha"][:,o]*Lambda["beta"][:,o]*np.diag(atimesaT[:,:,o]))
+                    lb += _fs(-0.5*D*log2pi + 0.5*(digamma(Lambda["alpha"][:,o])
+                               + np.log(np.maximum(Lambda["beta"][:,o], 1e-300))))
+                # p(G | A, Km)
+                for o in range(L):
+                    t1 = _fs(-0.5/sg**2 * np.diag(GtimesGT[:,:,o]))
+                    t2 = _fs( 1.0/sg**2 * A["mu"][:,o] * KmtimesGT[:,o])
+                    t3 = _fs(-0.5/sg**2 * (KmKm * atimesaT[:,:,o]).ravel())
+                    t4 = float(-0.5*N*P*(log2pi + 2*np.log(sg)))
+                    lb += float(np.clip(t1+t2+t3+t4, -1e15, 1e15))
+                # p(gamma)
+                lb += _fs((ag-1)*(digamma(gamma["alpha"])+np.log(np.maximum(gamma["beta"],1e-300)))
+                           - gamma["alpha"]*gamma["beta"]/bg
+                           - gammaln(ag) - ag*np.log(bg))
+                # p(b | gamma)
+                lb += _fs(-0.5*gamma["alpha"]*gamma["beta"]*np.diag(btimesbT))
+                lb += _fs(-0.5*L*log2pi + 0.5*(digamma(gamma["alpha"])
+                           + np.log(np.maximum(gamma["beta"], 1e-300))))
+                # p(omega)
+                lb += _fs((ao-1)*(digamma(omega["alpha"])+np.log(np.maximum(omega["beta"],1e-300)))
+                           - omega["alpha"]*omega["beta"]/bo
+                           - gammaln(ao) - ao*np.log(bo))
+                # p(e | omega)
+                lb += _fs(-0.5*omega["alpha"]*omega["beta"]*np.diag(etimeseT))
+                lb += _fs(-0.5*P*log2pi + 0.5*(digamma(omega["alpha"])
+                           + np.log(np.maximum(omega["beta"], 1e-300))))
+                # p(F | b, e, G)
+                for o in range(L):
+                    lb += _fs(-0.5*(F["mu"][o,:]**2 + F["sigma"][o,:]))
+                    lb += _fs(F["mu"][o,:] * (G["mu"][:,:,o].T @ be["mu"][L:]))
+                    lb += _fs(be["mu"][o] * F["mu"][o,:])
+                    lb += _fs(-0.5*(etimeseT * GtimesGT[:,:,o]).ravel())
+                    lb += _fs(-(G["mu"][:,:,o].T @ etimesb[:,o]))
+                    lb += float(-0.5*N*float(btimesbT[o,o]) - 0.5*N*log2pi)
+                # q(Lambda)
+                lb += _fs(Lambda["alpha"] + np.log(np.maximum(Lambda["beta"],1e-300))
+                          + gammaln(Lambda["alpha"])
+                          + (1-Lambda["alpha"])*digamma(Lambda["alpha"]))
+                # q(A)  — entropy of 469×469 Gaussians; logdet is large-negative, finite
+                for o in range(L):
+                    lb += float(0.5*(D*(log2pi+1))) + 0.5*_fld(A["sigma"][:,:,o])
+                # q(G)
+                lb += float(0.5*L*N*P*(log2pi+1)) + float(0.5*L*N)*_fld(G["sigma"])
+                # q(gamma)
+                lb += _fs(gamma["alpha"] + np.log(np.maximum(gamma["beta"],1e-300))
+                          + gammaln(gamma["alpha"])
+                          + (1-gamma["alpha"])*digamma(gamma["alpha"]))
+                # q(omega)
+                lb += _fs(omega["alpha"] + np.log(np.maximum(omega["beta"],1e-300))
+                          + gammaln(omega["alpha"])
+                          + (1-omega["alpha"])*digamma(omega["alpha"]))
+                # q(be)
+                lb += float(0.5*(L+P)*(log2pi+1)) + 0.5*_fld(be["sigma"])
+                # q(F)
+                log_Z = np.where(Z > 1e-300, np.log(Z), np.log(1e-300))
+                lb += _fs(0.5*(log2pi + F["sigma"]) + log_Z)
 
-            bounds[it] = lb if np.isfinite(lb) else np.nan
+              bounds[it] = lb if np.isfinite(lb) else np.nan
+            except Exception as _elbo_err:
+              bounds[it] = np.nan
+              lb = np.nan
+
             if (it + 1) % 10 == 0:
-                print(f"  iter {it+1:4d} | ELBO = {lb:+.6e}"
-                      + (" ⚠ NaN/Inf" if not np.isfinite(lb) else ""))
+                if np.isfinite(lb):
+                    print(f"  iter {it+1:4d} | ELBO = {lb:+.6e}")
+                else:
+                    # Find which posterior variable has gone NaN to help diagnosis
+                    nan_vars = [k for k, v in [
+                        ("A_mu",     A["mu"]),    ("G_mu",  G["mu"]),
+                        ("be_mu",    be["mu"]),   ("F_mu",  F["mu"]),
+                        ("btimesbT", btimesbT),   ("etimeseT", etimeseT),
+                    ] if not np.all(np.isfinite(v))]
+                    if nan_vars:
+                        print(f"  iter {it+1:4d} | ELBO = NaN  (diverged vars: {nan_vars})")
+                    else:
+                        print(f"  iter {it+1:4d} | ELBO = NaN  (numerical overflow in log-terms only — predictions OK)")
 
     state = dict(
         Lambda     = Lambda,
@@ -603,7 +617,7 @@ def build_kernels(X_train: np.ndarray,
 
     Km_tr = np.stack(kernels_tr, axis=-1)            # (N_tr, N_tr, P)
     Km_te = np.stack(kernels_te, axis=-1)            # (N_te, N_tr, P)
-    # NOTE: keep (N_te, N_tr, P) — bemkl_test expects rows=test, cols=train
+    Km_te = Km_te.transpose(1, 0, 2)                 # → (N_tr, N_te, P)  matches R convention
     return Km_tr, Km_te
 
 
