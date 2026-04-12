@@ -1,13 +1,3 @@
-"""
-BEMKL - Bayesian Efficient Multiple Kernel Learning
-Multilabel Classification (Variational Approximation)
-
-Translated from R to Python by Claude.
-Original paper: Gönen, M. (2012). Bayesian Efficient Multiple Kernel Learning. ICML.
-
-Adapted for multiomics BRCA dataset (CNV, miRNA, mRNA, Methylation).
-"""
-
 import numpy as np
 import scipy.linalg as sla
 from scipy.stats import norm
@@ -15,9 +5,7 @@ from scipy.special import digamma, gammaln
 from typing import Optional
 
 
-# ---------------------------------------------------------------------------
 # Helpers
-# ---------------------------------------------------------------------------
 
 def _sym(A: np.ndarray) -> np.ndarray:
     """Enforce exact symmetry."""
@@ -107,9 +95,7 @@ def _truncated_normal_mean_var(mu, lower, upper):
     return mean, var, Z
 
 
-# ---------------------------------------------------------------------------
 # Default parameters
-# ---------------------------------------------------------------------------
 
 def default_parameters() -> dict:
     return dict(
@@ -119,7 +105,7 @@ def default_parameters() -> dict:
         beta_gamma   = 1.0,
         alpha_omega  = 1.0,
         beta_omega   = 1.0,
-        sigma_g      = 1.0,   # 0.1 causes KmKm/sg² to explode with large N
+        sigma_g      = 1.0,
         margin       = 1.0,
         iteration    = 200,
         progress     = 1,
@@ -127,9 +113,7 @@ def default_parameters() -> dict:
     )
 
 
-# ---------------------------------------------------------------------------
 # Training
-# ---------------------------------------------------------------------------
 
 def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None) -> dict:
     """
@@ -168,7 +152,6 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
     margin  = parameters["margin"]
     n_iter  = parameters["iteration"]
 
-    # ---------- initialise variational factors ----------
 
     # Lambda (precision priors for A)
     Lambda = dict(
@@ -216,28 +199,26 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
         sigma = np.ones((L, N)),
     )
 
-    # ---------- cache KmKm = Σ_m  Km[:,:,m] @ Km[:,:,m].T  (D × D) ----------
     KmKm = np.zeros((D, D))
     for m in range(P):
         KmKm += Km[:, :, m] @ Km[:, :, m].T
 
 
-    # ---------- truncation bounds ----------
+    # truncation bounds 
     lower = np.full((L, N), -1e40)
     upper = np.full((L, N), +1e40)
     lower[Y > 0] = +margin
     upper[Y < 0] = -margin
 
-    # ---------- second-moment caches ----------
     atimesaT = np.stack([
         np.outer(A["mu"][:, o], A["mu"][:, o]) + A["sigma"][:, :, o]
         for o in range(L)
-    ], axis=-1)                                              # D × D × L
+    ], axis=-1)                                              
 
     GtimesGT = np.stack([
         G["mu"][:, :, o] @ G["mu"][:, :, o].T + N * G["sigma"]
         for o in range(L)
-    ], axis=-1)                                              # P × P × L
+    ], axis=-1)                                             
 
     btimesbT = np.outer(be["mu"][:L], be["mu"][:L]) + be["sigma"][:L, :L]
     etimeseT = (np.outer(be["mu"][L:], be["mu"][L:])
@@ -254,15 +235,12 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
 
     bounds = np.zeros(n_iter) if parameters["progress"] else None
 
-    # ---------- variational updates ----------
     for it in range(n_iter):
 
-        # --- update Lambda ---
         for o in range(L):
             denom = 1.0 / bl + 0.5 * np.diag(atimesaT[:, :, o])
             Lambda["beta"][:, o] = np.where(denom > 0, 1.0 / denom, bl)
 
-        # --- update A ---
         for o in range(L):
             prec_A = np.diag(Lambda["alpha"][:, o] * Lambda["beta"][:, o]) + KmKm / sg**2
             A["sigma"][:, :, o] = _safe_inv(prec_A)
@@ -272,11 +250,9 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
             atimesaT[:, :, o] = (np.outer(A["mu"][:, o], A["mu"][:, o])
                                  + A["sigma"][:, :, o])
 
-        # --- update G ---
         prec_G = np.eye(P) / sg**2 + etimeseT
         G["sigma"] = _safe_inv(prec_G)
         for o in range(L):
-            # AtKm[m, n] = A[:,o] · Km[:,n,m]  →  shape (P, N)
             AtKm = np.stack([A["mu"][:, o] @ Km[:, :, m] for m in range(P)], axis=0)
             rhs = (AtKm / sg**2
                    + np.outer(be["mu"][L:], F["mu"][o, :])
@@ -287,15 +263,12 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
                                   + N * G["sigma"])
             KmtimesGT[:, o] = sum(Km[:, :, m] @ G["mu"][m, :, o] for m in range(P))
 
-        # --- update gamma ---
         denom_g = 1.0 / bg + 0.5 * np.diag(btimesbT)
         gamma["beta"] = np.where(denom_g > 0, 1.0 / denom_g, bg)
 
-        # --- update omega ---
         denom_w = 1.0 / bo + 0.5 * np.diag(etimeseT)
         omega["beta"] = np.where(denom_w > 0, 1.0 / denom_w, bo)
 
-        # --- update be (joint bias + kernel weights) ---
         G_sum = np.array([G["mu"][:, :, o].sum(axis=1) for o in range(L)]).T  # P × L
         top_left = (np.diag(gamma["alpha"] * gamma["beta"])
                     + N * np.eye(L))
@@ -326,7 +299,6 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
             etimesb[:, o] = (be["mu"][L:] * be["mu"][o]
                              + be["sigma"][L:, o])
 
-        # --- update F ---
         output = np.zeros((L, N))
         for o in range(L):
             stacked = np.vstack([np.ones((1, N)), G["mu"][:, :, o]])  # (1+P) × N
@@ -335,11 +307,9 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
                                           posinf=1e6, neginf=-1e6)
 
         F["mu"], F["sigma"], Z = _truncated_normal_mean_var(output, lower, upper)
-        # guard F
         F["mu"]   = np.nan_to_num(F["mu"],   nan=0.0)
         F["sigma"] = np.clip(np.nan_to_num(F["sigma"], nan=1.0), 0.0, None)
 
-        # --- ELBO (optional) ---
         if parameters["progress"]:
             log2pi = np.log(2 * np.pi)
 
@@ -400,7 +370,7 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
                 lb += _fs(Lambda["alpha"] + np.log(np.maximum(Lambda["beta"],1e-300))
                           + gammaln(Lambda["alpha"])
                           + (1-Lambda["alpha"])*digamma(Lambda["alpha"]))
-                # q(A)  — entropy of 469×469 Gaussians; logdet is large-negative, finite
+                # q(A)
                 for o in range(L):
                     lb += float(0.5*(D*(log2pi+1))) + 0.5*_fld(A["sigma"][:,:,o])
                 # q(G)
@@ -451,9 +421,7 @@ def bemkl_train(Km: np.ndarray, Y: np.ndarray, parameters: Optional[dict] = None
     return state
 
 
-# ---------------------------------------------------------------------------
 # Prediction
-# ---------------------------------------------------------------------------
 
 def bemkl_test(Km: np.ndarray, state: dict) -> dict:
     """
@@ -509,9 +477,7 @@ def bemkl_test(Km: np.ndarray, state: dict) -> dict:
     return dict(G=G_mu, G_sigma=G_sigma, F=F_mu, F_sigma=F_sigma, P=prob)
 
 
-# ---------------------------------------------------------------------------
 # Kernel utilities for multiomics data
-# ---------------------------------------------------------------------------
 
 def rbf_kernel(X: np.ndarray, Y: np.ndarray, gamma: float) -> np.ndarray:
     """RBF (Gaussian) kernel  k(x,y) = exp(-gamma ||x-y||^2)."""
@@ -573,8 +539,8 @@ def _normalize_cross_kernel(K_tr: np.ndarray, K_te: np.ndarray,
     d_tr = d_tr.copy(); d_tr[d_tr == 0] = 1.0
     d_te = d_te.copy(); d_te[d_te == 0] = 1.0
 
-    K_tr_norm = K_tr / np.outer(d_tr, d_tr)   # (N_tr, N_tr)
-    K_te_norm = K_te / np.outer(d_te, d_tr)   # (N_te, N_tr)
+    K_tr_norm = K_tr / np.outer(d_tr, d_tr)  
+    K_te_norm = K_te / np.outer(d_te, d_tr)   
     return K_tr_norm, K_te_norm
 
 
@@ -596,9 +562,9 @@ def build_kernels(X_train: np.ndarray,
     kernels_tr, kernels_te = [], []
 
     for g in gammas:
-        K_tr = rbf_kernel(X_train, X_train, g)          # (N_tr, N_tr)
-        K_te = rbf_kernel(X_test,  X_train, g)          # (N_te, N_tr)
-        K_self_te = rbf_kernel(X_test, X_test, g)       # (N_te, N_te)
+        K_tr = rbf_kernel(X_train, X_train, g)          
+        K_te = rbf_kernel(X_test,  X_train, g)          
+        K_self_te = rbf_kernel(X_test, X_test, g)       
         d_tr = np.sqrt(np.diag(K_tr))
         d_te = np.sqrt(np.diag(K_self_te))
         Kn_tr, Kn_te = _normalize_cross_kernel(K_tr, K_te, d_tr, d_te)
@@ -615,9 +581,9 @@ def build_kernels(X_train: np.ndarray,
         kernels_tr.append(Kn_tr)
         kernels_te.append(Kn_te)
 
-    Km_tr = np.stack(kernels_tr, axis=-1)            # (N_tr, N_tr, P)
-    Km_te = np.stack(kernels_te, axis=-1)            # (N_te, N_tr, P)
-    Km_te = Km_te.transpose(1, 0, 2)                 # → (N_tr, N_te, P)  matches R convention
+    Km_tr = np.stack(kernels_tr, axis=-1)           
+    Km_te = np.stack(kernels_te, axis=-1)            
+    Km_te = Km_te.transpose(1, 0, 2)                 
     return Km_tr, Km_te
 
 
